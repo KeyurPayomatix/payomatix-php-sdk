@@ -2,7 +2,7 @@
 
 namespace PayomatixSDK\Services;
 
-use PayomatixSDK\Requests\TransactionStatusDto;
+use PayomatixSDK\Requests\TransactionStatusRequest;
 
 class TransactionStatusService
 {
@@ -17,7 +17,7 @@ class TransactionStatusService
 
 
     //string $merchantRef, ?string $orderId = null
-    public function check(TransactionStatusDto $transactionStatusDto): array
+    public function check(TransactionStatusRequest $transactionStatusDto): array
     {
         return $this->httpService->post(self::STATUS_API_URL, $transactionStatusDto->toArray());
     }

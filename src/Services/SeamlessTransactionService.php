@@ -2,7 +2,7 @@
 
 namespace PayomatixSDK\Services;
 
-use PayomatixSDK\Requests\SeamlessTransactionDto;
+use PayomatixSDK\Requests\SeamlessPaymentRequest;
 
 class SeamlessTransactionService
 {
@@ -15,7 +15,7 @@ class SeamlessTransactionService
         $this->httpService = $httpService;
     }
 
-    public function create(SeamlessTransactionDto $seamlessTransactionDto): array
+    public function create(SeamlessPaymentRequest $seamlessTransactionDto): array
     {
         return $this->httpService->post(self::SEAMLESS_API_URL, $seamlessTransactionDto->toArray(), [
             'User-Agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown-Agent',

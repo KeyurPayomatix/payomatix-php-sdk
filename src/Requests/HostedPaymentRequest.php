@@ -2,7 +2,10 @@
 
 namespace PayomatixSDK\Requests;
 
-class HostedPaymentRequest
+use PayomatixSDK\Contracts\PaymentRequestInterface;
+use PayomatixSDK\Support\Helpers;
+
+class HostedPaymentRequest implements PaymentRequestInterface
 {
     /** @var string $email Customer email address */
     public string $email;
@@ -63,34 +66,18 @@ class HostedPaymentRequest
     public ?string $splitPaymentVendors = null;
 
     /**
-     * @var array $customerInfo
+     * @var array $additionalInfo
      * Optional. Pre-fills the checkout form with customer information
-     * (e.g., name, address, phone) if provided.
+     * (e.g., firstName, lastName, address, state, city, zip, country, phoneNo, cardNo, customerVpa, etc.) if provided.
      */
-    private array $customerInfo = [];
+    private array $additionalInfo = [];
 
 
     /**
-     * @param array<array{
-     *     productId: string,
-     *     name: string,
-     *     quantity: string|int,
-     *     price: string|float,
-     *     description: string,
-     *     productCode: string,
-     *     imageUrl: string,
-     *     category: string,
-     *     taxRate?: string|float,
-     *     discount?: string|float,
-     *     weight?: string
-     * }> $productList
+     * @var array<int, array{name: string, quantity: string|int, price: string|float, imageUrl: string}>
      *
-     * @var array $products
-     *
-     *
-     *
-     * Optional. Displays a product list with full details on the checkout page
-     * if one or more products are passed.
+     * Optional. Contains a list of products to be displayed on the checkout page.
+     * Each product includes the name, quantity, price, and an image URL.
      */
     private array $products = [];
 
@@ -127,36 +114,51 @@ class HostedPaymentRequest
             $data['split_payment_vendors'] = $this->splitPaymentVendors;
         }
 
-        if (!empty($this->customerInfo)) {
-            $otherData = $this->convertToSnakeCase($this->customerInfo);
+        if (!empty($this->additionalInfo)) {
+            $otherData = Helpers::convertToSnakeCase($this->additionalInfo);
             $data['other_data'] = $otherData;
         }
 
         if (!empty($this->products)) {
-            $otherData['products'] = array_map([$this, 'convertToSnakeCase'], $this->products);
+            $otherData['products'] = array_map([Helpers::class, 'convertToSnakeCase'], $this->products);
             $data['other_data'] = $otherData;
         }
 
         return $data;
     }
 
-    public function setCustomerInfo(array $info): void
+    /**
+     * Set additional customer information to prefill the payment form.
+     *
+     * @param array<string, mixed> $additionalInfo
+     *      Associative array of additional customer details such as
+     *      firstName, lastName, address, state, city, zip, country, phoneNo, cardNo, customerVpa, etc.
+     */
+    public function setAdditionalInfo(array $additionalInfo): void
     {
-        $this->customerInfo = $info;
+        // Map cardNumber to card_no
+        if(isset($additionalInfo['cardNumber'])) {
+            $additionalInfo['card_no'] = $additionalInfo['cardNumber'];
+            unset($additionalInfo['cardNumber']);
+        }
+
+        // Map upiAddress to customer_vpa
+        if(isset($additionalInfo['upiAddress'])) {
+            $additionalInfo['customer_vpa'] = $additionalInfo['upiAddress'];
+            unset($additionalInfo['upiAddress']);
+        }
+
+        $this->additionalInfo = $additionalInfo;
     }
 
+    /**
+     * Set the product list.
+     *
+     * @param array<int, array{name: string, quantity: string|int, price: string|float, imageUrl: string}> $productList
+     *      List of products to be displayed on the checkout page.
+     */
     public function setProducts(array $productList): void
     {
         $this->products = $productList;
-    }
-
-    private function convertToSnakeCase(array $input): array
-    {
-        $result = [];
-        foreach ($input as $key => $value) {
-            $snakeKey = strtolower(preg_replace('/([a-z])([A-Z])/', '$1_$2', $key));
-            $result[$snakeKey] = $value;
-        }
-        return $result;
     }
 }

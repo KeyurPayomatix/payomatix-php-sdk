@@ -2,9 +2,10 @@
 
 namespace PayomatixSDK\Services;
 
+use PayomatixSDK\Contracts\HostedTransactionServiceInterface;
 use PayomatixSDK\Requests\HostedPaymentRequest;
 
-class HostedTransactionService
+class HostedTransactionService implements HostedTransactionServiceInterface
 {
     protected HttpService $httpService;
 
@@ -13,12 +14,11 @@ class HostedTransactionService
         $this->httpService = $httpService;
     }
 
-    public function process(HostedPaymentRequest $dto): array
+    public function process(HostedPaymentRequest $payload): array
     {
         $config = require __DIR__ . '/../config/payomatix.php';
         $endpoint = $config['endpoints']['hosted_transaction'];
 
-        print_r($dto->toArray());
-        return $this->httpService->post($endpoint, $dto->toArray());
+        return $this->httpService->post($endpoint, $payload->toArray());
     }
 }

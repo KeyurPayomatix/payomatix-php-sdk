@@ -2,7 +2,9 @@
 
 namespace PayomatixSDK\Requests;
 
-class SeamlessTransactionDto
+use PayomatixSDK\Contracts\PaymentRequestInterface;
+
+class SeamlessPaymentRequest implements PaymentRequestInterface
 {
     public string $email;
     public float $amount;

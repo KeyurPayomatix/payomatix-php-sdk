@@ -2,7 +2,9 @@
 
 namespace PayomatixSDK\Requests;
 
-class TransactionStatusDto
+use PayomatixSDK\Contracts\PaymentRequestInterface;
+
+class TransactionStatusRequest implements PaymentRequestInterface
 {
     public string $merchantRef;
     public string $orderId;

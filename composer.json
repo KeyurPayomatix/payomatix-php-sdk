@@ -1,5 +1,7 @@
 {
   "name": "payomatix/payomatix-sdk",
+  "description": "Payomatix Payment Gateway SDK",
+  "type": "library",
   "autoload": {
     "psr-4": {
       "PayomatixSDK\\": "src/"
@@ -8,5 +10,8 @@
   "require": {
     "php": ">=7.4",
     "guzzlehttp/guzzle": "^7.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.5"
   }
 }

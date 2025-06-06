@@ -33,5 +33,3 @@ Thumbs.db
 
 # Ignore environment config
 .env
-
-/tests
