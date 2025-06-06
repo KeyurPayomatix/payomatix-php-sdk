@@ -1,0 +1,24 @@
+<?php
+
+namespace PayomatixSDK\Services;
+
+use PayomatixSDK\Requests\SeamlessTransactionDto;
+
+class SeamlessTransactionService
+{
+    private HttpService $httpService;
+
+    const SEAMLESS_API_URL = 'https://admin.payomatix.com/payment/merchant/seamless/transaction';
+
+    public function __construct(HttpService $httpService)
+    {
+        $this->httpService = $httpService;
+    }
+
+    public function create(SeamlessTransactionDto $seamlessTransactionDto): array
+    {
+        return $this->httpService->post(self::SEAMLESS_API_URL, $seamlessTransactionDto->toArray(), [
+            'User-Agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown-Agent',
+        ]);
+    }
+}

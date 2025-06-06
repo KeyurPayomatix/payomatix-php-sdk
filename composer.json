@@ -1,0 +1,12 @@
+{
+  "name": "payomatix/payomatix-sdk",
+  "autoload": {
+    "psr-4": {
+      "PayomatixSDK\\": "src/"
+    }
+  },
+  "require": {
+    "php": ">=7.4",
+    "guzzlehttp/guzzle": "^7.0"
+  }
+}
