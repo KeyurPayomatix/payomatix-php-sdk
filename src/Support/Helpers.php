@@ -28,4 +28,60 @@ final class Helpers
 
         return $result;
     }
+
+    /**
+     * Decode JSON string safely
+     *
+     * @param mixed $json
+     * @return array|null
+     */
+    public static function decodeJson($json)
+    {
+        if (!is_string($json)) {
+            return null;
+        }
+
+        $decoded = json_decode($json, true);
+
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            return $decoded;
+        }
+
+        return null;
+    }
+
+    /**
+     * Normalize legacy status values
+     *
+     * @param string|int $status
+     * @return string
+     */
+    public static function mapStatus($status)
+    {
+        $status = (int) $status;
+
+        switch ($status) {
+            case 1:
+                return 'success';
+
+            case 0:
+            case 2:
+            case 3:
+            case 4:
+                return 'pending';
+
+            case 5:
+            case 6:
+                return 'blocked';
+
+            case 7:
+            case 8:
+                return 'declined';
+
+            default:
+                return 'unknown';
+        }
+    }
+
+
 }

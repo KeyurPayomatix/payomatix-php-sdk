@@ -1,3 +1,31 @@
+# Payomatix PHP SDK Integration Guide
+
+## Requirements
+
+- PHP 7.4 or higher
+- Composer
+- Payomatix PHP SDK (installed via Composer)
+
+## Installation
+
+Install the SDK via Composer:
+
+```bash
+composer require payomatix/payomatix-sdk
+```
+
+<hr>
+
+## 1. Payomatix Hosted Payment Integration (PHP Example)
+
+This PHP example demonstrates how to integrate Payomatix's Hosted Payment Page using the official Payomatix SDK.
+
+
+## Usage
+1. Update and run the following PHP script to initiate a hosted payment transaction:
+2. Run the script to initiate a hosted payment transaction.
+
+```php
 <?php
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -10,8 +38,7 @@ use PayomatixSDK\Requests\HostedPaymentRequest;
  * @param  string  $secretKey  Your Payomatix API secret key (found in Portal > API Keys)
  */
 $client = new PayomatixClient(
-    'PAY308H8MLNVI7SQXGJUT1725355473.K87G29SECKEY',
-    'http://localhost:8000' // Base URL
+    'YOUR-PAYOMATIX-SECRET-KEY' // Replace with your actual secret key
 );
 
 /**
@@ -23,7 +50,7 @@ $transactionData = new HostedPaymentRequest();
  * Required: Customer's email address
  * Used for sending receipts or identifying the customer (e.g., test@example.com)
  */
-$transactionData->email = 'test@example.com';
+$transactionData->email = 'john.doe@example.com';
 
 /**
  * Required: Total transaction amount without currency (e.g., 600)
@@ -133,11 +160,72 @@ $transactionData->setProducts([
 // Send the transaction request
 $response = $client->hostedTransactions->process($transactionData);
 
+// Redirect user to the checkout page
+if (isset($response['status']) && $response['status'] === 'redirect' && isset($response['redirect_url'])) {
+    header('Location: ' . $response['redirect_url']);
+    exit;
+}
+?>
+```
+
+## Notes
+- Replace API keys and URLs with your actual credentials.
+
+- The customer and product details are optional but recommended for a seamless checkout experience.
+
+- Use the `merchantReturnUrl` and `webhookCallbackUrl` to handle payment success/failure and webhook notifications.
+
+- Ensure you handle the response correctly, especially for error handling and logging.
+
+- Always validate all responses from the API before further processing.
+
+- `overridePaymentCategory` is optional and can be used to override rules, transaction limit, routing and cascading for transaction (e.g., "Ecommerce", "Rent", etc.).
+
+- `showPaymentMethod` is optional and can be used to show specific payment methods on the hosted payment page (e.g., "Card", "UPI", etc.).
+
+
+<hr>
+
+## 2. Check Transaction Status
+
+Check the current status of a transaction using the order ID returned after initiating a payment.
+
+
+```php
+<?php
+
+require __DIR__ . '/../vendor/autoload.php';
+
+use PayomatixSDK\PayomatixClient;
+use PayomatixSDK\Requests\TransactionStatusRequest;
+
+/**
+ * Initialize the Payomatix client
+ * @param  string  $secretKey  Your Payomatix API secret key (found in Portal > API Keys)
+ */
+$client = new PayomatixClient(
+    'YOUR-PAYOMATIX-SECRET-KEY' // Replace with your actual secret key
+);
+
+/**
+ * Create a new hosted payment request instance
+ */
+$transactionData = new TransactionStatusRequest();
+
+/**
+ * Required: Transaction Order ID
+ */
+$transactionData->orderId = 'YOUR-TRANSACTION-ORDER-ID'; // Replace with the actual order ID you received after initiating the payment
+
+// Send the transaction request
+$response = $client->transactionStatus->check($transactionData);
+
+
 print_r($response);
 exit;
 
-// Redirect user to the checkout page
-//if (isset($response['status']) && $response['status'] === 'redirect' && isset($response['redirect_url'])) {
-//    header('Location: ' . $response['redirect_url']);
-//    exit;
-//}
+```
+
+
+## License
+This code is for demo purposes only. Use it responsibly and always validate all responses from the API before further processing.

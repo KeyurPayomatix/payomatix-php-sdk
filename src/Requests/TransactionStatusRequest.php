@@ -6,14 +6,18 @@ use PayomatixSDK\Contracts\PaymentRequestInterface;
 
 class TransactionStatusRequest implements PaymentRequestInterface
 {
-    public string $merchantRef;
+    /** @var string $orderId Transaction Order ID */
     public string $orderId;
 
+    /**
+     * Converts TransactionData to an array format expected by the API
+     *
+     * @return array
+     */
     public function toArray(): array
     {
         return [
-            'merchant_ref'        => $this->merchantRef,
-            'order_id'       => $this->orderId,
+            'order_id' => $this->orderId,
         ];
     }
 }

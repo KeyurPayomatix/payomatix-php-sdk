@@ -3,12 +3,11 @@
 namespace PayomatixSDK\Services;
 
 use PayomatixSDK\Requests\TransactionStatusRequest;
+use PayomatixSDK\Responses\TransactionStatusResponse;
 
 class TransactionStatusService
 {
     private HttpService $httpService;
-
-    const STATUS_API_URL = 'https://admin.payomatix.com/payment/get/transaction';
 
     public function __construct(HttpService $httpService)
     {
@@ -16,9 +15,17 @@ class TransactionStatusService
     }
 
 
-    //string $merchantRef, ?string $orderId = null
-    public function check(TransactionStatusRequest $transactionStatusDto): array
+    public function check(TransactionStatusRequest $payload): TransactionStatusResponse
     {
-        return $this->httpService->post(self::STATUS_API_URL, $transactionStatusDto->toArray());
+        $config = require __DIR__ . '/../config/payomatix.php';
+        $endpoint = $config['endpoints']['transaction_status'];
+
+        $response = $this->httpService->post($endpoint, $payload->toArray());
+
+        if (($response['responseCode'] ?? 400) !== 200 || !isset($response['data'])) {
+            throw new \Exception($response['response'] ?? 'Unknown error');
+        }
+
+        return new TransactionStatusResponse($response['data']);
     }
 }

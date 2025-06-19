@@ -82,7 +82,7 @@ class HostedPaymentRequest implements PaymentRequestInterface
     private array $products = [];
 
     /**
-     * Converts DTO to an array format expected by the API
+     * Converts TransactionData to an array format expected by the API
      *
      * @return array
      */
