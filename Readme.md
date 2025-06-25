@@ -38,7 +38,7 @@ use PayomatixSDK\Requests\HostedPaymentRequest;
  * @param  string  $secretKey  Your Payomatix API secret key (found in Portal > API Keys)
  */
 $client = new PayomatixClient(
-    'YOUR-PAYOMATIX-SECRET-KEY' // Replace with your actual secret key
+    'YOUR-PAYOMATIX-SECRET-KEY' // Base URL
 );
 
 /**
@@ -47,36 +47,50 @@ $client = new PayomatixClient(
 $transactionData = new HostedPaymentRequest();
 
 /**
+ * @var string $email Customer email address
+ *
  * Required: Customer's email address
  * Used for sending receipts or identifying the customer (e.g., test@example.com)
  */
-$transactionData->email = 'john.doe@example.com';
+$transactionData->email = 'test@example.com';
 
 /**
+ * @var float $amount Transaction amount
+ *
  * Required: Total transaction amount without currency (e.g., 600)
  */
 $transactionData->amount = 600;
 
 /**
+ * @var string $currency Transaction currency (default: INR)
+ *
  * Optional: Transaction currency  (e.g., INR)
  * Default: INR
  */
 // $transactionData->currency = "INR";
 
 /**
+ * @var string $merchantReturnUrl URL to redirect the customer after transaction
+ *
  * Required: URL where the customer will be redirected after completing the payment
  * This URL will receive a GET request with transaction details as query parameters
  */
 $transactionData->merchantReturnUrl = 'https://your-domain.com/return-url';
 
 /**
+ * @var string $webhookCallbackUrl URL to receive server-side webhook notification
+ *
  * Required: URL that will receive server-to-server notifications about the transaction status
  * This URL will receive a POST request with transaction data in the request body
  */
 $transactionData->webhookCallbackUrl = 'https://your-domain.com/webhook-url';
 
 /**
- * Optional: Override the default payment category ('Rent', 'Vendor', 'Ecommerce', 'Education', 'Utility')
+ * @var string|null $overridePaymentCategory
+ *
+ * Optional. If set to one of the predefined values ('Rent', 'Vendor', 'Ecommerce', 'Education', 'Utility'),
+ * this will override all default routing, cascading, and transaction limits, and force the transaction
+ * to be processed using the specified payment gateway category.
  */
 $transactionData->overridePaymentCategory = "Ecommerce";
 
@@ -115,8 +129,10 @@ $transactionData->overridePaymentCategory = "Ecommerce";
 
 
 /**
- * Optional: Add customer info
- * Use this to pre-fill customer details on the hosted payment page
+ * @var array $additionalInfo
+ *
+ * Optional. Pre-fills the checkout form with customer information
+ * (e.g., firstName, lastName, address, state, city, zip, country, phoneNo, cardNo, customerVpa, etc.) if provided.
  */
 $transactionData->setAdditionalInfo([
     'firstName' => 'John', // Customer's first name
@@ -132,9 +148,8 @@ $transactionData->setAdditionalInfo([
 ]);
 
 /**
- * Optional: Add product details
- * Each item should include basic product info (name, quantity, price, imageUrl)
- * Displays a product list with following details on the checkout page if one or more products are passed.
+ * Optional. Contains a list of products to be displayed on the checkout page.
+ * Each product includes the name, quantity, price, and an image URL.
  */
 $transactionData->setProducts([
     [
@@ -165,7 +180,6 @@ if (isset($response['status']) && $response['status'] === 'redirect' && isset($r
     header('Location: ' . $response['redirect_url']);
     exit;
 }
-?>
 ```
 
 ## Notes

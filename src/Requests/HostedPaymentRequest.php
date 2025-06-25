@@ -67,6 +67,7 @@ class HostedPaymentRequest implements PaymentRequestInterface
 
     /**
      * @var array $additionalInfo
+     *
      * Optional. Pre-fills the checkout form with customer information
      * (e.g., firstName, lastName, address, state, city, zip, country, phoneNo, cardNo, customerVpa, etc.) if provided.
      */
