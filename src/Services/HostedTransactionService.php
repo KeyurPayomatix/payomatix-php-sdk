@@ -14,11 +14,11 @@ class HostedTransactionService implements HostedTransactionServiceInterface
         $this->httpService = $httpService;
     }
 
-    public function process(HostedPaymentRequest $payload): array
+    public function process(HostedPaymentRequest $request): array
     {
         $config = require __DIR__ . '/../config/payomatix.php';
         $endpoint = $config['endpoints']['hosted_transaction'];
 
-        return $this->httpService->post($endpoint, $payload->toArray());
+        return $this->httpService->post($endpoint, $request->toArray());
     }
 }

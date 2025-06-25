@@ -8,16 +8,17 @@ class SeamlessTransactionService
 {
     private HttpService $httpService;
 
-    const SEAMLESS_API_URL = 'https://admin.payomatix.com/payment/merchant/seamless/transaction';
-
     public function __construct(HttpService $httpService)
     {
         $this->httpService = $httpService;
     }
 
-    public function create(SeamlessPaymentRequest $seamlessTransactionDto): array
+    public function process(SeamlessPaymentRequest $request): array
     {
-        return $this->httpService->post(self::SEAMLESS_API_URL, $seamlessTransactionDto->toArray(), [
+        $config = require __DIR__ . '/../config/payomatix.php';
+        $endpoint = $config['endpoints']['seamless_transaction'];
+
+        return $this->httpService->post($endpoint, $request->toArray(), [
             'User-Agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown-Agent',
         ]);
     }
