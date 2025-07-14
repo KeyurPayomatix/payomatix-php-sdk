@@ -2,8 +2,8 @@
 
 namespace PayomatixSDK\Services;
 
-use PayomatixSDK\Requests\TransactionStatusRequest;
 use PayomatixSDK\Responses\TransactionStatusResponse;
+use PayomatixSDK\Services\HttpService;
 
 class TransactionStatusService
 {
@@ -14,10 +14,9 @@ class TransactionStatusService
         $this->httpService = $httpService;
     }
 
-
-    public function check(TransactionStatusRequest $payload): TransactionStatusResponse
+    public function check($payload): TransactionStatusResponse
     {
-        $config = require __DIR__ . '/../config/payomatix.php';
+        $config = require __DIR__ . '/../Config/Payomatix.php';
         $endpoint = $config['endpoints']['transaction_status'];
 
         $response = $this->httpService->post($endpoint, $payload->toArray());
@@ -28,4 +27,4 @@ class TransactionStatusService
 
         return new TransactionStatusResponse($response['data']);
     }
-}
+} 
