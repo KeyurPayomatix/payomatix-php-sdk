@@ -10,8 +10,7 @@ use PayomatixSDK\Requests\HostedPaymentRequest;
  * @param  string  $secretKey  Your Payomatix API secret key (found in Portal > API Keys)
  */
 $client = new PayomatixClient(
-    'PAY308H8MLNVI7SQXGJUT1725355473.K87G29SECKEY',
-    'http://localhost:8000' // Base URL
+    '<YOUR_PAYOMATIX_SECRET_KEY>' // Replace with your actual secret key
 );
 
 /**
@@ -25,22 +24,22 @@ $transactionData = new HostedPaymentRequest();
  * Required: Customer's email address
  * Used for sending receipts or identifying the customer (e.g., test@example.com)
  */
-$transactionData->email = 'test@example.com';
+$transactionData->email = 'test@jondoe.com';
 
 /**
  * @var float $amount Transaction amount
  *
- * Required: Total transaction amount without currency (e.g., 600)
+ * Required: Total transaction amount without currency (e.g., 30.00)
  */
-$transactionData->amount = 600;
+$transactionData->amount = 30.00;
 
 /**
  * @var string $currency Transaction currency (default: INR)
  *
- * Optional: Transaction currency  (e.g., INR)
+ * Optional: Transaction currency  (e.g., USD)
  * Default: INR
  */
-// $transactionData->currency = "INR";
+$transactionData->currency = "USD";
 
 /**
  * @var string $merchantReturnUrl URL to redirect the customer after transaction
@@ -48,7 +47,7 @@ $transactionData->amount = 600;
  * Required: URL where the customer will be redirected after completing the payment
  * This URL will receive a GET request with transaction details as query parameters
  */
-$transactionData->merchantReturnUrl = 'https://your-domain.com/return-url';
+$transactionData->merchantReturnUrl = '<YOUR_MERCHANT_RETURN_URL>';
 
 /**
  * @var string $webhookCallbackUrl URL to receive server-side webhook notification
@@ -56,7 +55,7 @@ $transactionData->merchantReturnUrl = 'https://your-domain.com/return-url';
  * Required: URL that will receive server-to-server notifications about the transaction status
  * This URL will receive a POST request with transaction data in the request body
  */
-$transactionData->webhookCallbackUrl = 'https://your-domain.com/webhook-url';
+$transactionData->webhookCallbackUrl = '<YOUR_WEBHOOK_CALLBACK_URL>';
 
 /**
  * @var string|null $overridePaymentCategory
@@ -65,7 +64,7 @@ $transactionData->webhookCallbackUrl = 'https://your-domain.com/webhook-url';
  * this will override all default routing, cascading, and transaction limits, and force the transaction
  * to be processed using the specified payment gateway category.
  */
-$transactionData->overridePaymentCategory = "Ecommerce";
+// $transactionData->overridePaymentCategory = "Ecommerce";
 
 /**
  * @var string|null $onlyShowPaymentMethod
@@ -100,7 +99,6 @@ $transactionData->overridePaymentCategory = "Ecommerce";
  */
 // $transactionData->splitPaymentVendors = '{"vendor_label": 400,"vendor_label": 200}';
 
-
 /**
  * @var array $additionalInfo
  *
@@ -108,16 +106,18 @@ $transactionData->overridePaymentCategory = "Ecommerce";
  * (e.g., firstName, lastName, address, state, city, zip, country, phoneNo, cardNo, customerVpa, etc.) if provided.
  */
 $transactionData->setAdditionalInfo([
-    'firstName' => 'John', // Customer's first name
-    'lastName'  => 'Doe', // Customer's last name
-    'address'   => '456 Elm Street', // Full street address
-    'state'     => 'NY', // State code (2-letter)
-    'city'      => 'New York', // City name
-    'zip'       => '100010', // Must be exactly 6 characters long
-    'country'   => 'US', // Country code (2-letter)
+    'firstName' => 'firstName', // Customer's first name
+    'lastName'  => 'lastName', // Customer's last name
+    'address'   => 'your-address', // Full street address
+    'state'     => 'your-state', // State code (2-letter)
+    'city'      => 'your-city', // City name
+    'zip'       => '110001', // Must be exactly 6 characters long
+    'country'   => 'IN', // Country code (2-letter)
     'phoneNo'   => '9876543210', // Must be 10 characters long without country code
-    'cardNumber' => '4111111111111111', // For seamless integration: pre-fills the card number field for card payments
-    'upiAddress' => 'dummy@upi' // For seamless integration: pre-fills the UPI VPA (Virtual Payment Address) for UPI payments
+    'cardNumber' => '5105105105105100', // For seamless integration: pre-fills the card number field for card payments
+    'cvvNumber' => '123', // CVV number for card payments
+    'expiryMonth' => '12', // Expiry month for card payments
+    'upiAddress' => 'success@upi' // For seamless integration: pre-fills the UPI VPA (Virtual Payment Address) for UPI payments
 ]);
 
 /**
@@ -145,11 +145,15 @@ $transactionData->setProducts([
     ]
 ]);
 
-// Send the transaction request
+// Send the transaction request using V2 API
 $response = $client->hostedTransactions->process($transactionData);
 
 // Redirect user to the checkout page
-if (isset($response['status']) && $response['status'] === 'redirect' && isset($response['redirect_url'])) {
-    header('Location: ' . $response['redirect_url']);
-    exit;
-}
+// if (isset($response['status']) && $response['status'] === 'redirect' && isset($response['redirect_url'])) {
+//     header('Location: ' . $response['redirect_url']);
+//     exit;
+// }
+
+// For debugging purposes, you can print the response
+echo "API Response:\n";
+print_r($response); 

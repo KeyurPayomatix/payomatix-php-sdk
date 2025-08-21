@@ -2,7 +2,7 @@
 
 namespace PayomatixSDK\Services;
 
-use PayomatixSDK\Requests\SeamlessPaymentRequest;
+use PayomatixSDK\Services\HttpService;
 
 class SeamlessTransactionService
 {
@@ -13,13 +13,13 @@ class SeamlessTransactionService
         $this->httpService = $httpService;
     }
 
-    public function process(SeamlessPaymentRequest $request): array
+    public function process($request): array
     {
-        $config = require __DIR__ . '/../config/payomatix.php';
+        $config = require __DIR__ . '/../Config/Payomatix.php';
         $endpoint = $config['endpoints']['seamless_transaction'];
 
         return $this->httpService->post($endpoint, $request->toArray(), [
             'User-Agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown-Agent',
         ]);
     }
-}
+} 

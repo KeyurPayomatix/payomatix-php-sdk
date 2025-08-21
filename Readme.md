@@ -1,10 +1,12 @@
-# Payomatix PHP SDK Integration Guide
+# Payomatix PHP SDK
+
+A comprehensive PHP SDK for integrating Payomatix payment gateway services into your applications. This SDK provides easy-to-use interfaces for hosted payments, seamless payments, and transaction status checking.
 
 ## Requirements
 
 - PHP 7.4 or higher
 - Composer
-- Payomatix PHP SDK (installed via Composer)
+- Guzzle HTTP Client (automatically installed via Composer)
 
 ## Installation
 
@@ -14,173 +16,475 @@ Install the SDK via Composer:
 composer require payomatix/payomatix-sdk
 ```
 
-<hr>
+## Quick Start
 
-## 1. Payomatix Hosted Payment Integration (PHP Example)
-
-This PHP example demonstrates how to integrate Payomatix's Hosted Payment Page using the official Payomatix SDK.
-
-
-## Usage
-1. Update and run the following PHP script to initiate a hosted payment transaction:
-2. Run the script to initiate a hosted payment transaction.
+### 1. Initialize the Client
 
 ```php
 <?php
 
-require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php';
+
+use PayomatixSDK\PayomatixClient;
+
+// Initialize with your secret key
+$client = new PayomatixClient('YOUR-PAYOMATIX-SECRET-KEY');
+```
+
+### 2. Available Services
+
+The SDK provides three main services:
+
+- **Hosted Transactions**: Redirect customers to Payomatix's hosted payment page
+- **Seamless Transactions**: Process payments directly through your application
+- **Transaction Status**: Check the status of existing transactions
+
+## API Reference
+
+### PayomatixClient
+
+The main client class that provides access to all payment services.
+
+```php
+$client = new PayomatixClient(string $secretKey, ?string $baseUrl = null);
+```
+
+**Parameters:**
+- `$secretKey` (string, required): Your Payomatix API secret key from the merchant portal
+- `$baseUrl` (string, optional): Custom API base URL (uses default if not provided)
+
+**Available Services:**
+- `$client->hostedTransactions` - Hosted payment processing
+- `$client->seamlessTransactions` - Seamless payment processing
+- `$client->transactionStatus` - Transaction status checking
+
+---
+
+## 1. Hosted Payment Integration
+
+Hosted payments redirect customers to Payomatix's secure payment page where they can complete their transaction.
+
+### Basic Example
+
+```php
+<?php
+
+require __DIR__ . '/vendor/autoload.php';
 
 use PayomatixSDK\PayomatixClient;
 use PayomatixSDK\Requests\HostedPaymentRequest;
 
-/**
- * Initialize the Payomatix client
- * @param  string  $secretKey  Your Payomatix API secret key (found in Portal > API Keys)
- */
-$client = new PayomatixClient(
-    'YOUR-PAYOMATIX-SECRET-KEY' // Base URL
-);
+// Initialize client
+$client = new PayomatixClient('YOUR-PAYOMATIX-SECRET-KEY');
 
-/**
- * Create a new hosted payment request instance
- */
+// Create payment request
 $transactionData = new HostedPaymentRequest();
 
-/**
- * @var string $email Customer email address
- *
- * Required: Customer's email address
- * Used for sending receipts or identifying the customer (e.g., test@example.com)
- */
-$transactionData->email = 'test@example.com';
+// Required fields
+$transactionData->email = 'customer@example.com';
+$transactionData->amount = 100.00;
+$transactionData->merchantReturnUrl = 'https://your-domain.com/success';
+$transactionData->webhookCallbackUrl = 'https://your-domain.com/webhook';
 
-/**
- * @var float $amount Transaction amount
- *
- * Required: Total transaction amount without currency (e.g., 600)
- */
-$transactionData->amount = 600;
+// Optional: Set currency (default: INR)
+$transactionData->currency = 'USD';
 
-/**
- * @var string $currency Transaction currency (default: INR)
- *
- * Optional: Transaction currency  (e.g., INR)
- * Default: INR
- */
-// $transactionData->currency = "INR";
-
-/**
- * @var string $merchantReturnUrl URL to redirect the customer after transaction
- *
- * Required: URL where the customer will be redirected after completing the payment
- * This URL will receive a GET request with transaction details as query parameters
- */
-$transactionData->merchantReturnUrl = 'https://your-domain.com/return-url';
-
-/**
- * @var string $webhookCallbackUrl URL to receive server-side webhook notification
- *
- * Required: URL that will receive server-to-server notifications about the transaction status
- * This URL will receive a POST request with transaction data in the request body
- */
-$transactionData->webhookCallbackUrl = 'https://your-domain.com/webhook-url';
-
-/**
- * @var string|null $overridePaymentCategory
- *
- * Optional. If set to one of the predefined values ('Rent', 'Vendor', 'Ecommerce', 'Education', 'Utility'),
- * this will override all default routing, cascading, and transaction limits, and force the transaction
- * to be processed using the specified payment gateway category.
- */
-$transactionData->overridePaymentCategory = "Ecommerce";
-
-/**
- * @var string|null $onlyShowPaymentMethod
- *
- * Optional. Defines the specific payment method type to show on the checkout page.
- * If set, only the corresponding payment method will be displayed and all others will be hidden.
- *
- * Accepted values:
- *   1  => Credit Card
- *   2  => Debit Card
- *   3  => UPI
- *   4  => Wallet
- *   5  => Net Banking
- *   8  => Buy Now Pay Later
- *   9  => EMI
- *   10 => E-Challan
- */
-// $transactionData->onlyShowPaymentMethod = 1;
-
-/**
- * @var string|null $splitPaymentVendors
- *
- * Optional. JSON string specifying vendor-wise split payment details.
- * Use this if you want to split the transaction amount across multiple vendors at runtime.
- *
- * - You must first create vendors in the merchant portal.
- * - Use the vendor's label as the key and amount as the value.
- * - The sum of all vendor amounts must exactly match the full transaction amount.
- *
- * Example:
- *   '{"vendor_label_1": 400, "vendor_label_2": 200}'
- */
-// $transactionData->splitPaymentVendors = '{"vendor_label": 400,"vendor_label": 200}';
-
-
-/**
- * @var array $additionalInfo
- *
- * Optional. Pre-fills the checkout form with customer information
- * (e.g., firstName, lastName, address, state, city, zip, country, phoneNo, cardNo, customerVpa, etc.) if provided.
- */
-$transactionData->setAdditionalInfo([
-    'firstName' => 'John', // Customer's first name
-    'lastName'  => 'Doe', // Customer's last name
-    'address'   => '456 Elm Street', // Full street address
-    'state'     => 'NY', // State code (2-letter)
-    'city'      => 'New York', // City name
-    'zip'       => '100010', // Must be exactly 6 characters long
-    'country'   => 'US', // Country code (2-letter)
-    'phoneNo'   => '9876543210', // Must be 10 characters long without country code
-    'cardNumber' => '4111111111111111', // For seamless integration: pre-fills the card number field for card payments
-    'upiAddress' => 'dummy@upi' // For seamless integration: pre-fills the UPI VPA (Virtual Payment Address) for UPI payments
-]);
-
-/**
- * Optional. Contains a list of products to be displayed on the checkout page.
- * Each product includes the name, quantity, price, and an image URL.
- */
-$transactionData->setProducts([
-    [
-        'name'     => 'Wireless Headphones',                // Product name
-        'quantity' => '1',                                  // Quantity as string
-        'price'    => '120.00',                             // Price per unit
-        'imageUrl' => 'https://yourstore.com/images/headphones.jpg' // Product image URL
-    ],
-    [
-        'name'     => 'Gaming Laptop',
-        'quantity' => '1',
-        'price'    => '1500.00',
-        'imageUrl' => 'https://yourstore.com/images/laptop.jpg'
-    ],
-    [
-        'name'     => 'Smartwatch',
-        'quantity' => '2',
-        'price'    => '75.50',
-        'imageUrl' => 'https://yourstore.com/images/smartwatch.jpg'
-    ]
-]);
-
-// Send the transaction request
+// Process the payment
 $response = $client->hostedTransactions->process($transactionData);
 
-// Redirect user to the checkout page
+// Redirect to payment page
 if (isset($response['status']) && $response['status'] === 'redirect' && isset($response['redirect_url'])) {
     header('Location: ' . $response['redirect_url']);
     exit;
 }
 ```
+
+### Advanced Example with Additional Features
+
+```php
+<?php
+
+require __DIR__ . '/vendor/autoload.php';
+
+use PayomatixSDK\PayomatixClient;
+use PayomatixSDK\Requests\HostedPaymentRequest;
+
+$client = new PayomatixClient('YOUR-PAYOMATIX-SECRET-KEY');
+
+$transactionData = new HostedPaymentRequest();
+
+// Basic required fields
+$transactionData->email = 'customer@example.com';
+$transactionData->amount = 150.00;
+$transactionData->currency = 'USD';
+$transactionData->merchantReturnUrl = 'https://your-domain.com/success';
+$transactionData->webhookCallbackUrl = 'https://your-domain.com/webhook';
+
+// Set customer information (optional)
+$transactionData->setAdditionalInfo([
+    'firstName' => 'John',
+    'lastName'  => 'Doe',
+    'address'   => '123 Main Street',
+    'state'     => 'NY',
+    'city'      => 'New York',
+    'zip'       => '10001',
+    'country'   => 'US',
+    'phoneNo'   => '9876543210'
+]);
+
+// Set product details (optional)
+$transactionData->setProducts([
+    [
+        'name'     => 'Premium Headphones',
+        'quantity' => '1',
+        'price'    => '100.00',
+        'imageUrl' => 'https://yourstore.com/images/headphones.jpg'
+    ],
+    [
+        'name'     => 'Wireless Mouse',
+        'quantity' => '1',
+        'price'    => '50.00',
+        'imageUrl' => 'https://yourstore.com/images/mouse.jpg'
+    ]
+]);
+
+$response = $client->hostedTransactions->process($transactionData);
+
+if (isset($response['status']) && $response['status'] === 'redirect' && isset($response['redirect_url'])) {
+    header('Location: ' . $response['redirect_url']);
+    exit;
+}
+```
+
+### HostedPaymentRequest Properties
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `email` | string | Yes | Customer's email address |
+| `amount` | float | Yes | Transaction amount |
+| `currency` | string | No | Currency code (default: INR) |
+| `merchantReturnUrl` | string | Yes | URL to redirect after payment |
+| `webhookCallbackUrl` | string | Yes | URL for webhook notifications |
+
+### Additional Features
+
+#### Customer Information
+Use `setAdditionalInfo()` to pre-fill customer details:
+
+```php
+$transactionData->setAdditionalInfo([
+    'firstName' => 'John',
+    'lastName'  => 'Doe',
+    'address'   => '123 Main Street',
+    'state'     => 'NY',
+    'city'      => 'New York',
+    'zip'       => '10001',
+    'country'   => 'US',
+    'phoneNo'   => '9876543210'
+]);
+```
+
+#### Product Details
+Use `setProducts()` to display products on the payment page:
+
+```php
+$transactionData->setProducts([
+    [
+        'name'     => 'Product Name',
+        'quantity' => '1',
+        'price'    => '100.00',
+        'imageUrl' => 'https://example.com/image.jpg'
+    ]
+]);
+```
+---
+
+## 2. Seamless Payment Integration
+
+Seamless payments allow you to process payments directly through your application without redirecting customers to an external payment page.
+
+### Basic Example
+
+```php
+<?php
+
+require __DIR__ . '/vendor/autoload.php';
+
+use PayomatixSDK\PayomatixClient;
+use PayomatixSDK\Requests\SeamlessPaymentRequest;
+
+$client = new PayomatixClient('YOUR-PAYOMATIX-SECRET-KEY');
+
+$transactionData = new SeamlessPaymentRequest();
+
+// Required fields
+$transactionData->email = 'customer@example.com';
+$transactionData->amount = 100.00;
+$transactionData->paymentMethodType = 1; // Credit Card
+$transactionData->merchantReturnUrl = 'https://your-domain.com/success';
+$transactionData->webhookCallbackUrl = 'https://your-domain.com/webhook';
+
+// Card details (required for card payments)
+$transactionData->cardNumber = '4242424242424242';
+$transactionData->cvvNumber = '123';
+$transactionData->expiryMonth = '12';
+$transactionData->expiryYear = '2025';
+
+// Optional merchant reference
+$transactionData->merchantRef = 'order-12345';
+
+$response = $client->seamlessTransactions->process($transactionData);
+
+print_r($response);
+```
+
+### UPI Payment Example
+
+```php
+<?php
+
+require __DIR__ . '/vendor/autoload.php';
+
+use PayomatixSDK\PayomatixClient;
+use PayomatixSDK\Requests\SeamlessPaymentRequest;
+
+$client = new PayomatixClient('YOUR-PAYOMATIX-SECRET-KEY');
+
+$transactionData = new SeamlessPaymentRequest();
+
+// Basic fields
+$transactionData->email = 'customer@example.com';
+$transactionData->amount = 100.00;
+$transactionData->paymentMethodType = 3; // UPI
+$transactionData->merchantReturnUrl = 'https://your-domain.com/success';
+$transactionData->webhookCallbackUrl = 'https://your-domain.com/webhook';
+
+// UPI VPA (required for UPI payments)
+$transactionData->upiAddress = 'customer@upi';
+
+$response = $client->seamlessTransactions->process($transactionData);
+
+print_r($response);
+```
+
+### SeamlessPaymentRequest Properties
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `email` | string | Yes | Customer's email address |
+| `amount` | float | Yes | Transaction amount |
+| `currency` | string | No | Currency code (default: INR) |
+| `paymentMethodType` | int | Yes | Payment method type (see table below) |
+| `merchantReturnUrl` | string | Yes | URL to redirect after payment |
+| `webhookCallbackUrl` | string | Yes | URL for webhook notifications |
+| `cardNumber` | string | Conditional | Card number (required for card payments) |
+| `cvvNumber` | string | Conditional | CVV (required for card payments) |
+| `expiryMonth` | string | Conditional | Expiry month (required for card payments) |
+| `expiryYear` | string | Conditional | Expiry year (required for card payments) |
+| `upiAddress` | string | Conditional | UPI VPA (required for UPI payments) |
+| `merchantRef` | string | No | Merchant reference for tracking |
+
+### Payment Method Types
+
+| Value | Payment Method |
+|-------|----------------|
+| 1 | Credit Card |
+| 2 | Debit Card |
+| 3 | UPI |
+| 4 | Wallet |
+| 5 | Net Banking |
+| 8 | Buy Now Pay Later |
+| 9 | EMI |
+| 10 | E-Challan |
+
+### Additional Customer Information
+
+```php
+$transactionData->setAdditionalInfo([
+    'firstName' => 'John',
+    'lastName'  => 'Doe',
+    'address'   => '123 Main Street',
+    'state'     => 'NY',
+    'city'      => 'New York',
+    'zip'       => '10001',
+    'country'   => 'US',
+    'phoneNo'   => '9876543210'
+]);
+```
+
+---
+
+## 3. Transaction Status Checking
+
+Check the status of a transaction using its order ID.
+
+### Example
+
+```php
+<?php
+
+require __DIR__ . '/vendor/autoload.php';
+
+use PayomatixSDK\PayomatixClient;
+use PayomatixSDK\Requests\TransactionStatusRequest;
+
+$client = new PayomatixClient('YOUR-PAYOMATIX-SECRET-KEY');
+
+$transactionData = new TransactionStatusRequest();
+$transactionData->orderId = 'YOUR-ORDER-ID';
+
+$response = $client->transactionStatus->check($transactionData);
+
+print_r($response);
+```
+
+### TransactionStatusRequest Properties
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `orderId` | string | Yes | Transaction order ID |
+
+---
+
+## Response Handling
+
+### Success Response (Hosted Payment)
+
+```php
+[
+    "responseCode": 300,
+    "response": "Transaction in authorization process.",
+    "status": "redirect",
+    "redirect_url": "https://stageadmin.payomatix.com/cashfree/otp/G4241752479185/BSL91752479186/5114919199626/350",
+    "data": {
+        "order_id": "YZucYQJy-dQzG-xaFL-1752479185jT",
+        "merchant_ref": "wer345t-fc2e-4a43-a900-1872d9c00890",
+        "email": "test@jondoe.com",
+        "amount": "30.00",
+        "currency": "USD",
+        "test_mode": 0,
+        "transaction_type": "Credit Card",
+        "integration_type": "Seamless",
+        "return_url": "http://localhost:8000/redirect/"
+    }
+]
+```
+### Error Response
+
+```php
+[
+    "responseCode": 400,
+    "response": "Transaction authentication failed from bank side.",
+    "status": "declined",
+    "data": {
+        "order_id": "lIu3MdI0-JHOq-9yQi-1752478679Qu",
+        "merchant_ref": "wer345t-fc2e-4a43-a900-1872d9c00890",
+        "email": "test@jondoe.com",
+        "amount": "30.00",
+        "currency": "USD",
+        "test_mode": 0,
+        "transaction_type": "Credit Card",
+        "integration_type": "Non - Seamless",
+        "return_url": "http://localhost:8000/redirect/"
+    }
+]
+```
+
+---
+
+## Webhook Handling
+
+Your webhook endpoint will receive POST requests with transaction data. Here's an example of how to handle webhooks:
+
+```php
+<?php
+
+// webhook.php
+$webhookData = json_decode(file_get_contents('php://input'), true);
+
+// Verify the webhook signature (recommended)
+// $signature = $_SERVER['HTTP_X_PAYOMATIX_SIGNATURE'] ?? '';
+// verifyWebhookSignature($webhookData, $signature);
+
+// Process the webhook data
+$orderId = $webhookData['order_id'] ?? '';
+$status = $webhookData['status'] ?? '';
+$amount = $webhookData['amount'] ?? '';
+
+switch ($status) {
+    case 'success':
+        // Payment successful
+        // Update your database, send confirmation email, etc.
+        break;
+    case 'failed':
+        // Payment failed
+        // Handle failure, notify customer, etc.
+        break;
+    case 'pending':
+        // Payment pending
+        // Handle pending status
+        break;
+}
+
+http_response_code(200);
+echo 'OK';
+```
+
+---
+
+## Error Handling
+
+Always implement proper error handling in your application:
+
+```php
+try {
+    $response = $client->hostedTransactions->process($transactionData);
+    
+    if (isset($response['status'])) {
+        switch ($response['status']) {
+            case 'redirect':
+                header('Location: ' . $response['redirect_url']);
+                exit;
+            case 'success':
+                // Handle success
+                break;
+            case 'error':
+                // Handle error
+                $errorMessage = $response['message'] ?? 'Unknown error';
+                throw new Exception($errorMessage);
+        }
+    }
+} catch (Exception $e) {
+    // Log error and handle gracefully
+    error_log('Payment error: ' . $e->getMessage());
+    // Show user-friendly error message
+}
+```
+
+---
+
+## Configuration
+
+### Environment Setup
+
+The SDK uses a configuration file located at `src/Config/Payomatix.php`. You can override the base URL when initializing the client:
+
+```php
+$client = new PayomatixClient(
+    'YOUR-SECRET-KEY',
+    'https://api-staging.payomatix.com' // Custom base URL
+);
+```
+
+### Testing
+
+Use the provided test examples in the `tests/` directory:
+
+- `tests/hosted-example.php` - Hosted payment example
+- `tests/seamless-example.php` - Seamless payment example
+- `tests/transaction-status-example.php` - Transaction status example
+
+---
 
 ## Notes
 - Replace API keys and URLs with your actual credentials.
@@ -197,49 +501,30 @@ if (isset($response['status']) && $response['status'] === 'redirect' && isset($r
 
 - `showPaymentMethod` is optional and can be used to show specific payment methods on the hosted payment page (e.g., "Card", "UPI", etc.).
 
-
 <hr>
 
-## 2. Check Transaction Status
+## Best Practices
 
-Check the current status of a transaction using the order ID returned after initiating a payment.
+1. **Always validate responses** before processing further
+2. **Implement proper error handling** for all API calls
+3. **Use HTTPS** for all webhook and return URLs
+4. **Store transaction IDs** for reconciliation
+5. **Implement webhook signature verification** for security
+6. **Test thoroughly** in staging environment before going live
+7. **Log all transactions** for debugging and audit purposes
 
+---
 
-```php
-<?php
+## Support
 
-require __DIR__ . '/../vendor/autoload.php';
+For technical support and questions:
 
-use PayomatixSDK\PayomatixClient;
-use PayomatixSDK\Requests\TransactionStatusRequest;
+- Check the test examples in the `tests/` directory
+- Review the source code in the `src/` directory
+- Contact Payomatix support for API-related issues
 
-/**
- * Initialize the Payomatix client
- * @param  string  $secretKey  Your Payomatix API secret key (found in Portal > API Keys)
- */
-$client = new PayomatixClient(
-    'YOUR-PAYOMATIX-SECRET-KEY' // Replace with your actual secret key
-);
-
-/**
- * Create a new hosted payment request instance
- */
-$transactionData = new TransactionStatusRequest();
-
-/**
- * Required: Transaction Order ID
- */
-$transactionData->orderId = 'YOUR-TRANSACTION-ORDER-ID'; // Replace with the actual order ID you received after initiating the payment
-
-// Send the transaction request
-$response = $client->transactionStatus->check($transactionData);
-
-
-print_r($response);
-exit;
-
-```
-
+---
 
 ## License
-This code is for demo purposes only. Use it responsibly and always validate all responses from the API before further processing.
+
+This SDK is provided by Payomatix for integration with their payment gateway services. Use responsibly and always validate all responses from the API before further processing.

@@ -10,23 +10,22 @@ use PayomatixSDK\Requests\TransactionStatusRequest;
  * @param  string  $secretKey  Your Payomatix API secret key (found in Portal > API Keys)
  */
 $client = new PayomatixClient(
-    'PAY308H8MLNVI7SQXGJUT1725355473.K87G29SECKEY',
-    'http://localhost:8000' // Base URL
+    '<YOUR_PAYOMATIX_SECRET_KEY>' // Replace with your actual secret key
 );
 
 /**
- * Create a new hosted payment request instance
+ * Create a new transaction status request instance
  */
 $transactionData = new TransactionStatusRequest();
 
 /**
  * Required: Transaction Order ID
  */
-$transactionData->orderId = 'f8VQOcjr-A7xR-7Shz-1740667143iq';
+$transactionData->orderId = '<YOUR_ORDER_ID>'; // Replace with the actual order ID you received after initiating the payment
 
-// Send the transaction request
+// Send the transaction request using V2 API
 $response = $client->transactionStatus->check($transactionData);
 
-
-print_r($response);
-exit;
+// For debugging purposes, you can print the response
+echo "API Response:\n";
+print_r($response); 

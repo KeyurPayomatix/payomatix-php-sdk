@@ -63,7 +63,7 @@ class PayomatixClient
     {
         $this->secretKey = $secretKey;
 
-        $config = require __DIR__ . '/config/payomatix.php';
+        $config = require __DIR__ . '/Config/Payomatix.php';
         $this->baseUrl = rtrim($baseUrl ?? $config['base_url'], '/');
 
         $this->httpService = new HttpService($secretKey, $this->baseUrl);

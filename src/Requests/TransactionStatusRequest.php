@@ -20,4 +20,4 @@ class TransactionStatusRequest implements PaymentRequestInterface
             'order_id' => $this->orderId,
         ];
     }
-}
+} 

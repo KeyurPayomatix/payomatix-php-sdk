@@ -15,7 +15,7 @@ class HttpService
     {
         $this->secretKey = $secretKey;
 
-        $config = require(__DIR__ . '/../config/payomatix.php');
+        $config = require(__DIR__ . '/../Config/Payomatix.php');
         $this->baseUrl = rtrim($baseUrl ?? $config['base_url'], '/');
 
         $this->client = new Client([
@@ -36,7 +36,6 @@ class HttpService
                 'json'    => $payload,
                 'headers' => $headers,
             ]);
-
             $data = json_decode($response->getBody()->getContents(), true);
 
             if (!is_array($data)) {
@@ -46,6 +45,8 @@ class HttpService
             return $data;
 
         } catch (GuzzleException $e) {
+            print_r($e->getMessage());
+            exit;
             throw new \Exception('HTTP Request failed: ' . $e->getMessage());
         }
     }
