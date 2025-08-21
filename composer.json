@@ -1,5 +1,5 @@
 {
-  "name": "payomatix/payomatix-sdk",
+  "name": "payomatix-sdk/payomatix-php-sdk",
   "description": "Payomatix Payment Gateway SDK",
   "type": "library",
   "autoload": {
