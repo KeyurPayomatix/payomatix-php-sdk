@@ -13,7 +13,7 @@ A comprehensive PHP SDK for integrating Payomatix payment gateway services into 
 Install the SDK via Composer:
 
 ```bash
-composer require payomatix/payomatix-sdk
+composer require payomatix-sdk/payomatix-php-sdk
 ```
 
 ## Quick Start
