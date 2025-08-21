@@ -2,6 +2,7 @@
   "name": "payomatix-sdk/payomatix-php-sdk",
   "description": "Payomatix Payment Gateway SDK",
   "type": "library",
+  "license": "MIT",
   "autoload": {
     "psr-4": {
       "PayomatixSDK\\": "src/"
